@@ -1,557 +1,255 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Happy Birthday - Fireworks Show</title>
-<style>
-  :root{
-    --bg:#001428;
-    --panel: rgba(255,255,255,0.05);
-    --glass: rgba(255,255,255,0.06);
-    --accent: #ffd166;
-  }
-  html,body{ height:100%; margin:0; font-family: Inter, system-ui, Arial; background: radial-gradient(ellipse at 20% 10%, rgba(255,200,120,0.04), transparent 5%), var(--bg); color:#fff; overflow:hidden;}
-  .center-panel{
-    position: absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:50;
-  }
-  .card{
-    width: min(680px, 94%); padding: 24px; background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:16px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); backdrop-filter: blur(6px);
-  }
-  h1{ margin:0 0 8px 0; font-size:1.4rem; letter-spacing:0.6px;}
-  label{ display:block; font-size:0.9rem; margin-top:12px; color:#dfefff; }
-  input[type="text"], input[type="date"]{
-    width:100%; padding:10px 12px; margin-top:6px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); color:#fff; font-size:1rem;
-  }
-  .controls{ display:flex; gap:8px; margin-top:16px; align-items:center; }
-  button, .mutebtn{ background:linear-gradient(90deg,#ff7ab6,#ffd166); color:#111; border: none; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600;}
-  button.secondary{ background: transparent; border:1px solid rgba(255,255,255,0.07); color:#dfefff; }
-  .small{ font-size:0.85rem; color:#bcd9ff; margin-top:8px; }
-  #overlayForm{ z-index:60; }
-  /* Fullscreen container for canvas and UI */
-  #stage{ position:fixed; inset:0; z-index:10; pointer-events:none; }
-  canvas{ display:block; width:100%; height:100%; }
-  .ui-top{
-    position:fixed; top:12px; left:12px; z-index:70; display:flex; gap:8px; align-items:center;
-  }
-  .ui-top button{ pointer-events:auto; }
-  .messageBox{
-    position:fixed; bottom:8%; left:50%; transform:translateX(-50%); z-index:70; pointer-events:none;
-    text-align:center;
-  }
-  .message{
-    font-weight:800; font-size:3.2rem; letter-spacing:1px; text-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    transform-origin:center center;
-    opacity:0; color: #ffefc1;
-  }
-  /* slow motion reveal */
-  .message.show{
-    animation: revealSlow 8s ease forwards;
-  }
-  @keyframes revealSlow{
-    0%{ transform: translateY(30px) scale(0.9); opacity:0; filter: blur(4px) }
-    20%{ transform: translateY(0) scale(1.05); opacity:1; filter: blur(0px) }
-    100%{ transform: scale(1); opacity:1; filter: blur(0); }
-  }
-  .sub{
-    font-size:1.1rem; color:#dbe7ff; margin-top:8px; opacity:0.9;
-  }
-  /* small footer instructions */
-  .hint{ position:fixed; right:12px; bottom:12px; z-index:70; font-size:0.9rem; color:#a8d0ff; }
-  /* responsive tweaks */
-  @media (max-width:520px){
-    .message{ font-size:2rem; }
-    .card{ padding:16px; }
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Happy Birthday — For Dhana</title>
+  <style>
+    /* Reset */
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body,#app{height:100%}
+    body{font-family: 'Segoe UI', Roboto, Helvetica, Arial; background:#001; color:#fff; overflow:hidden}
+
+    /* Scene layout */
+    .scene{position:relative;width:100%;height:100vh;background:linear-gradient(#00102b 0%, #000814 60%, #07112a 100%);display:flex;align-items:end;justify-content:center}
+
+    /* Moon */
+    .moon{position:absolute;left:50%;top:8%;transform:translateX(-50%);width:220px;height:220px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #eaf6ff 0%, #cfe9ff 25%, #9fc9ff 50%, #6ea9ff 75%, #3b6edb 100%);filter:drop-shadow(0 0 30px rgba(110,170,255,0.6));mix-blend-mode:screen}
+    .moon::after{content:'';position:absolute;right:22%;top:20%;width:40%;height:40%;border-radius:50%;background:rgba(255,255,255,0.12);filter:blur(6px)}
+
+    /* Stars */
+    .starfield{position:absolute;inset:0;pointer-events:none}
+    .star{position:absolute;background:rgba(255,255,255,0.9);border-radius:50%;opacity:0.85;animation:twinkle 4s linear infinite}
+    @keyframes twinkle{0%{transform:scale(0.6);opacity:0.2}50%{transform:scale(1.2);opacity:1}100%{transform:scale(0.6);opacity:0.2}}
+
+    /* Lake */
+    .lake{position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(180deg,#05122b 0%, #021028 50%, #000814 100%);box-shadow:inset 0 20px 80px rgba(0,0,0,0.7);overflow:hidden}
+    .reflection{position:absolute;left:50%;transform:translateX(-50%);bottom:20%;width:600px;height:300px;border-radius:50%;filter:blur(12px);opacity:0.25;background:radial-gradient(ellipse at center, rgba(150,200,255,0.45) 0%, rgba(50,80,160,0.08) 50%, transparent 60%);mix-blend-mode:screen}
+
+    /* Trees & parrots (simple silhouettes) */
+    .tree{position:absolute;bottom:14%;left:8%;width:180px;height:220px}
+    .tree .trunk{position:absolute;left:48%;bottom:0;width:18px;height:60%;background:#2b1b10;border-radius:6px}
+    .tree .leaves{position:absolute;left:0;top:0;width:100%;height:60%;background:radial-gradient(ellipse at 30% 30%, #0c3 0%, #063 30%, #012 100%);border-radius:50%}
+    .parrot{position:absolute;width:40px;height:28px;border-radius:40px 40px 10px 10px;background:linear-gradient(#0ff,#07b);transform-origin:center;box-shadow:0 3px 6px rgba(0,0,0,0.6)}
+    .parrot.left{left:26%;top:22%} .parrot.right{left:40%;top:28%}
+    .parrot::after{content:'';position:absolute;right:-6px;top:8px;width:10px;height:6px;border-radius:50%;background:#ff4757}
+
+    /* Fireworks canvas sits above lake */
+    canvas#fireworks{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+
+    /* Message box */
+    .card{position:absolute;left:50%;transform:translateX(-50%);top:50%;width:min(900px,94%);max-height:60%;padding:26px;border-radius:18px;background:linear-gradient(180deg, rgba(6,12,30,0.7), rgba(3,6,15,0.55));backdrop-filter:blur(6px);box-shadow:0 10px 40px rgba(0,0,0,0.6);overflow:auto}
+    .title{font-size:28px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+    .title .heart{font-size:34px;color:#ff82a6}
+    .message{white-space:pre-wrap;line-height:1.5;font-size:18px}
+
+    /* Typing cursor */
+    .cursor{display:inline-block;width:10px;height:20px;background:#fff;margin-left:6px;animation:blink 1s steps(2) infinite}
+    @keyframes blink{50%{opacity:0}}
+
+    /* Controls */
+    .controls{position:absolute;right:18px;bottom:18px;display:flex;gap:10px}
+    .btn{background:linear-gradient(180deg,#29467a,#12315a);color:#fff;padding:10px 14px;border-radius:12px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.45)}
+
+    /* Small responsive tweaks */
+    @media (max-width:600px){.moon{width:140px;height:140px}.card{top:48%;padding:18px;font-size:15px}}
+  </style>
 </head>
 <body>
+  <div id="app" class="scene">
+    <div class="moon" aria-hidden></div>
+    <div class="starfield" id="starfield"></div>
 
-<!-- Input overlay -->
-<div id="overlayForm" class="center-panel">
-  <div class="card" role="dialog" aria-labelledby="title" aria-modal="true">
-    <h1 id="title">Set up the Surprise</h1>
-    <p class="small">Enter her name and date of birth. Tap <strong>Start Show</strong> to launch the crackers and the full birthday message in slow motion.</p>
+    <canvas id="fireworks"></canvas>
 
-    <label for="name">Her name</label>
-    <input id="name" type="text" placeholder="e.g. Ananya" required />
+    <div class="card" role="article" aria-label="Birthday message">
+      <div class="title"><span class="heart">💖</span><strong>To my Dhana — Happy Birthday</strong></div>
+      <div class="message" id="message"></div>
+    </div>
 
-    <label for="dob">Date of birth</label>
-    <input id="dob" type="date" />
+    <div class="lake">
+      <div class="reflection"></div>
+      <div class="tree">
+        <div class="leaves"></div>
+        <div class="trunk"></div>
+      </div>
+      <div class="parrot left" style="transform:translate(-40px,10px) rotate(-10deg)"></div>
+      <div class="parrot right" style="transform:translate(50px,20px) scaleX(-1) rotate(6deg)"></div>
+    </div>
 
     <div class="controls">
-      <button id="startBtn">Start Show</button>
-      <button id="demoBtn" class="secondary">Demo (skip date)</button>
-      <div style="flex:1"></div>
-      <button id="muteBtn" class="mutebtn" title="Mute/unmute sound">🔊 Mute</button>
+      <button class="btn" id="toggleSound">🔊 Sound: ON</button>
+      <button class="btn" id="replay">✨ Replay Fireworks</button>
     </div>
-    <p class="small">Tip: On mobile, use headphones for better blast sound. You can pause or mute using the top-left controls during the show.</p>
   </div>
-</div>
 
-<!-- Top UI -->
-<div class="ui-top" aria-hidden="false">
-  <button id="pauseBtn" class="secondary" style="pointer-events:none">Pause</button>
-  <button id="restartBtn" class="secondary" style="pointer-events:none">Restart</button>
-</div>
+  <script>
+    // THE MESSAGE (keeps exact user text inside JS string so it's easy to show with typing)
+    const MESSAGE = `Happy birthday to my dhana I hope you will be very happy today and also with me  My love I always pray that God that my sweet heart will be so happy for hundreds of years with me my cutie I'm so blessed that I got you in this big world  I promise you that I will keep you happy more and more every day  And my love for is infinite my cutie sonaa motkiiii I love forever and ever and ever and ever,,, 💋😘🐼💋 my gelu pila suna pandu love you so much my hati  In my life I'm so happy from last three years and that credit goes you my baby You are always taking care mine like a kid which was really an awesome treat for me ever so I did this small surprise for you  nd I hope you will like it my baby be mine forever my dear dhaana pandu gelu pila and once again a big big big and lots of kisii and lots of love from u r bogaaa dear and let's celebrate this together my duki bogii pila and once so many happy returns of the day 🎊🎈 🐼😘🐘🎊🎊🥳🥳🥳🎉🎉🎉🐻 gelu`;
 
-<!-- Canvas stage -->
-<div id="stage" aria-hidden="true">
-  <canvas id="canvas"></canvas>
-</div>
+    // Typing effect
+    const messageEl = document.getElementById('message');
+    let idx = 0;
 
-<!-- Slow-motion message -->
-<div class="messageBox" id="messageBox" aria-hidden="true">
-  <div id="message" class="message"></div>
-  <div id="subtext" class="sub"></div>
-</div>
-
-<div class="hint">Click anywhere to add extra crackers</div>
-
-<script>
-/*******************************
- * Fireworks + Sound Show
- * Single-file: HTML/CSS/JS
- *******************************/
-
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d', { alpha: true });
-let W = canvas.width = innerWidth;
-let H = canvas.height = innerHeight;
-
-window.addEventListener('resize', () => {
-  W = canvas.width = innerWidth;
-  H = canvas.height = innerHeight;
-});
-
-/* ---------- Controls & UI ---------- */
-const overlay = document.getElementById('overlayForm');
-const nameInput = document.getElementById('name');
-const dobInput = document.getElementById('dob');
-const startBtn = document.getElementById('startBtn');
-const demoBtn = document.getElementById('demoBtn');
-const muteBtn = document.getElementById('muteBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const restartBtn = document.getElementById('restartBtn');
-const messageEl = document.getElementById('message');
-const subtext = document.getElementById('subtext');
-const messageBox = document.getElementById('messageBox');
-
-let isMuted = false;
-let isPaused = false;
-
-/* ---------- Audio: WebAudio explosion/noise ---------- */
-let AudioCtx = null;
-function ensureAudioCtx(){
-  if(!AudioCtx){
-    AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-}
-function playExplosion(time = 0, volume=0.6){
-  if(isMuted) return;
-  ensureAudioCtx();
-  const ctxA = AudioCtx;
-  const now = time ? ctxA.currentTime + time : ctxA.currentTime;
-
-  // Create a short noise burst
-  const bufferSize = ctxA.sampleRate * 1.0; // 1 sec buffer
-  const buffer = ctxA.createBuffer(1, bufferSize, ctxA.sampleRate);
-  const data = buffer.getChannelData(0);
-  for(let i=0;i<bufferSize;i++){
-    // pink-ish decay noise: random * envelope
-    data[i] = (Math.random()*2 - 1) * Math.exp(-4 * i / bufferSize);
-  }
-  const noise = ctxA.createBufferSource();
-  noise.buffer = buffer;
-
-  // Filter and gain to shape the blast
-  const filter = ctxA.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.value = 1200 + Math.random()*2000;
-
-  const gain = ctxA.createGain();
-  gain.gain.value = volume;
-
-  // Optional harmonic "boom" using oscillator
-  const osc = ctxA.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.value = 120 + Math.random()*260;
-  const oscGain = ctxA.createGain();
-  oscGain.gain.value = 0.12;
-
-  // Connect nodes
-  noise.connect(filter);
-  filter.connect(gain);
-  gain.connect(ctxA.destination);
-
-  osc.connect(oscGain);
-  oscGain.connect(ctxA.destination);
-
-  noise.start(now);
-  osc.start(now);
-
-  // small pitch/drop for realism
-  osc.frequency.setValueAtTime(osc.frequency.value, now);
-  osc.frequency.exponentialRampToValueAtTime(40 + Math.random()*30, now + 0.35);
-
-  // Envelope fade
-  gain.gain.setValueAtTime(volume, now);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
-
-  oscGain.gain.setValueAtTime(0.12, now);
-  oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
-
-  // stop
-  noise.stop(now + 1.0);
-  osc.stop(now + 1.0);
-}
-
-/* ---------- Fireworks particle system ---------- */
-const particles = [];
-const rockets = [];
-const GRAVITY = 0.06;
-const FIREWORK_FREQUENCY = 900; // ms average between automatic launches
-
-function random(min, max){ return Math.random()*(max-min)+min; }
-
-class Rocket{
-  constructor(x, y, vx, vy, color){
-    this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.color = color;
-    this.trail = []; this.alive = true;
-  }
-  update(){
-    this.trail.push({x:this.x, y:this.y});
-    if(this.trail.length>12) this.trail.shift();
-    this.vy += GRAVITY * 0.08;
-    this.x += this.vx;
-    this.y += this.vy;
-    // explode if vy > -1 or reached a ceiling
-    if(this.vy > -1 || this.y < H*0.2 || Math.random() < 0.002){
-      this.explode();
-      this.alive = false;
+    function typeNext() {
+      if (idx <= MESSAGE.length) {
+        messageEl.textContent = MESSAGE.slice(0, idx);
+        idx++;
+        setTimeout(typeNext, 25 + Math.random()*30);
+      } else {
+        // after typing finishes, trigger a big fireworks burst and confetti
+        launchFirework(window.innerWidth/2, window.innerHeight/3, 6);
+        setTimeout(()=>{launchConfetti();},400);
+      }
     }
-  }
-  explode(){
-    const count = Math.floor(random(28, 120));
-    const hue = this.color;
-    for(let i=0;i<count;i++){
-      const angle = Math.random()*Math.PI*2;
-      const speed = random(1, 6) * (0.5 + Math.random()*0.9);
-      const p = new Particle(this.x, this.y, Math.cos(angle)*speed, Math.sin(angle)*speed, hue, false);
-      particles.push(p);
+    typeNext();
+
+    // ------- Starfield generation -------
+    const starfield = document.getElementById('starfield');
+    for (let i=0;i<120;i++){
+      const s = document.createElement('div');
+      s.className='star';
+      const size = Math.random()*2.6+0.6;
+      s.style.width = size+'px'; s.style.height = size+'px';
+      s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*45+'%';
+      s.style.opacity = 0.4+Math.random()*0.8;
+      s.style.animationDelay = (Math.random()*4)+'s';
+      starfield.appendChild(s);
     }
-    // add some sparkles / moving objects after explosion
-    for(let i=0;i<12;i++){
-      particles.push(new Particle(this.x, this.y, random(-1.5,1.5), random(-3,-0.4), hue, true, true));
+
+    // ------- Fireworks (Canvas) -------
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    let DPR = window.devicePixelRatio || 1;
+    function resize(){
+      canvas.width = window.innerWidth * DPR;
+      canvas.height = window.innerHeight * DPR;
+      canvas.style.width = window.innerWidth+'px';
+      canvas.style.height = window.innerHeight+'px';
+      ctx.setTransform(DPR,0,0,DPR,0,0);
     }
-    // play explosion sound
-    playExplosion();
-  }
-  draw(ctx){
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    ctx.beginPath();
-    ctx.fillStyle = hsl(${this.color}, 90%, 60%);
-    ctx.arc(this.x, this.y, 3.5, 0, Math.PI*2);
-    ctx.fill();
-    // trail
-    ctx.strokeStyle = rgba(255,255,255,0.06);
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for(let i=0;i<this.trail.length;i++){
-      const t = this.trail[i];
-      if(i===0) ctx.moveTo(t.x, t.y);
-      else ctx.lineTo(t.x, t.y);
+    window.addEventListener('resize', resize); resize();
+
+    let particles = [];
+
+    function random(min,max){return Math.random()*(max-min)+min}
+
+    class Particle{
+      constructor(x,y,color,vel,life,size){
+        this.x=x;this.y=y;this.vx=vel.x;this.vy=vel.y;this.color=color;this.life=life;this.age=0;this.size=size;this.fade = Math.random()*0.02+0.009
+      }
+      update(dt){this.age+=dt;this.vy+=0.02;this.x+=this.vx;this.y+=this.vy;}
+      draw(ctx){const t=1-(this.age/this.life);ctx.globalCompositeOperation='lighter';ctx.beginPath();ctx.fillStyle=`rgba(${this.color.r},${this.color.g},${this.color.b},${Math.max(0,t)})`;ctx.arc(this.x,this.y, Math.max(0,this.size*t),0,Math.PI*2);ctx.fill();}
     }
-    ctx.stroke();
-    ctx.restore();
-  }
-}
 
-class Particle{
-  constructor(x,y,vx,vy,hue, spark=false, glitter=false){
-    this.x = x; this.y = y; this.vx = vx; this.vy = vy;
-    this.hue = hue;
-    this.alpha = 1;
-    this.size = spark ? random(1,2.5) : random(1.6,3.6);
-    this.decay = random(0.008, 0.02);
-    this.spark = spark;
-    this.glitter = glitter;
-    this.age = 0;
-  }
-  update(){
-    this.vy += GRAVITY * (this.spark ? 0.6 : 1);
-    this.vx *= 0.995;
-    this.vy *= 0.995;
-    this.x += this.vx;
-    this.y += this.vy;
-    this.alpha -= this.decay;
-    this.age++;
-    if(this.alpha <= 0) this.alpha = 0;
-    // trailing glitter spawns
-    if(this.glitter && Math.random() < 0.06){
-      particles.push(new Particle(this.x, this.y, random(-0.6,0.6), random(-0.6,0.6), this.hue, true, false));
+    function launchFirework(x,y,count){
+      const palette = [ {r:255,g:180,b:60}, {r:120,g:200,b:255}, {r:255,g:100,b:160}, {r:200,g:255,b:160}, {r:160,g:120,b:255} ];
+      const base = palette[Math.floor(Math.random()*palette.length)];
+      const n = count || 24;
+      for (let i=0;i<n;i++){
+        const angle = Math.PI*2 * (i/n) + (Math.random()-0.5)*0.6;
+        const speed = random(2,6);
+        const vel = {x:Math.cos(angle)*speed, y:Math.sin(angle)*speed};
+        const p = new Particle(x, y, base, vel, random(40,110), random(2.0,5.5));
+        particles.push(p);
+      }
+      // small pop cracks
+      for (let i=0;i<6;i++){particles.push(new Particle(x,y,base,{x:random(-1,1),y:random(-2,0)},random(10,40),random(1,3)))}
+      if (soundOn) playBurstSound();
     }
-  }
-  draw(ctx){
-    if(this.alpha <= 0) return;
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    // glow
-    const grade = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size*6);
-    grade.addColorStop(0, rgba(255,255,255,${Math.min(0.9, this.alpha*0.9)}));
-    grade.addColorStop(0.2, hsla(${this.hue}, 90%, 60%, ${this.alpha*0.9}));
-    grade.addColorStop(1, rgba(0,0,0,0));
-    ctx.fillStyle = grade;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size*3, 0, Math.PI*2);
-    ctx.fill();
 
-    // spark center
-    ctx.beginPath();
-    ctx.fillStyle = hsla(${this.hue}, 90%, 60%, ${this.alpha});
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
-    ctx.fill();
-
-    // thin tail for sparks
-    if(this.spark){
-      ctx.strokeStyle = hsla(${this.hue}, 90%, 60%, ${this.alpha*0.9});
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(this.x, this.y);
-      ctx.lineTo(this.x - this.vx*2, this.y - this.vy*2);
-      ctx.stroke();
+    function animate(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const dt = 1;
+      for (let i=particles.length-1;i>=0;i--){
+        const p = particles[i];
+        p.update(dt);
+        p.draw(ctx);
+        if (p.age > p.life) particles.splice(i,1);
+      }
+      requestAnimationFrame(animate);
     }
-    ctx.restore();
-  }
-}
+    animate();
 
-/* ---------- Animation loop ---------- */
-let lastTime = 0;
-let lastAuto = 0;
-let raf = null;
-
-function loop(ts){
-  if(isPaused){ raf = requestAnimationFrame(loop); return; }
-  const delta = ts - lastTime;
-  lastTime = ts;
-
-  // translucent background to keep trails
-  ctx.fillStyle = 'rgba(0,10,20,0.22)';
-  ctx.fillRect(0,0,W,H);
-
-  // occasionally launch rockets automatically
-  if(ts - lastAuto > FIREWORK_FREQUENCY * (0.6 + Math.random()*1.4)){
-    spawnAutoRocket();
-    lastAuto = ts;
-  }
-
-  // update rockets
-  for(let i=rockets.length-1;i>=0;i--){
-    const r = rockets[i];
-    r.update();
-    r.draw(ctx);
-    if(!r.alive) rockets.splice(i,1);
-  }
-
-  // update particles
-  for(let i=particles.length-1;i>=0;i--){
-    const p = particles[i];
-    p.update();
-    p.draw(ctx);
-    if(p.alpha <= 0.005 || p.y > H + 50) particles.splice(i,1);
-  }
-
-  raf = requestAnimationFrame(loop);
-}
-
-/* ---------- Interaction: clicks create rockets ---------- */
-window.addEventListener('pointerdown', (e) => {
-  // if overlay visible, ignore here
-  if(overlay.style.display !== 'none') return;
-  spawnRocket(e.clientX, H, random(-1.5,1.5), random(-9,-14), random(0,360));
-});
-
-/* ---------- Spawning helpers ---------- */
-function spawnRocket(x= random(W*0.1, W*0.9), y = H, vx=random(-1.2,1.2), vy=random(-11,-15), color=null){
-  const hue = color || Math.floor(random(0, 360));
-  const r = new Rocket(x, y, vx, vy, hue);
-  rockets.push(r);
-  // small whoosh sound
-  if(!isMuted){
-    ensureAudioCtx();
-    const ac = AudioCtx;
-    const g = ac.createGain(); g.gain.value = 0.05;
-    const o = ac.createOscillator(); o.type = 'sawtooth';
-    o.frequency.value = 450 + Math.random()*220;
-    o.connect(g); g.connect(ac.destination);
-    o.start();
-    o.frequency.exponentialRampToValueAtTime(120, ac.currentTime + 0.6);
-    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.7);
-    o.stop(ac.currentTime + 0.7);
-  }
-}
-
-function spawnAutoRocket(){
-  // launch from bottom center horizontally random
-  spawnRocket(random(W*0.15, W*0.85), H, random(-1.0,1.0), random(-13,-8), Math.floor(random(20,360)));
-  // small scheduled additional blasts sometimes
-  if(Math.random() < 0.25){
-    setTimeout(()=> playExplosion(0), 250);
-  }
-}
-
-/* ---------- Start / Demo / Form logic ---------- */
-function startShow(){
-  const herName = (nameInput.value || "You").trim();
-  const dob = (dobInput.value || "").trim();
-  overlay.style.display = 'none';
-  document.getElementById('stage').style.pointerEvents = 'auto';
-  document.getElementById('stage').ariaHidden = 'false';
-  document.getElementById('overlayForm').ariaHidden = 'true';
-  // enable top controls
-  pauseBtn.style.pointerEvents = 'auto';
-  restartBtn.style.pointerEvents = 'auto';
-
-  // show message in slow motion after a delay
-  setTimeout(()=> {
-    showMessage(herName, dob);
-  }, 2400);
-
-  // start engine
-  if(!raf) {
-    lastTime = performance.now();
-    lastAuto = performance.now() - 1200;
-    raf = requestAnimationFrame(loop);
-  }
-}
-
-startBtn.addEventListener('click', (e) => {
-  // ensure user allowed audio
-  ensureAudioCtx();
-  if(!nameInput.value.trim()){
-    // gentle refusal and proceed with default
-    nameInput.value = "Darling";
-  }
-  startShow();
-});
-
-demoBtn.addEventListener('click', () => {
-  nameInput.value = "Lovely";
-  dobInput.value = "";
-  startShow();
-});
-
-muteBtn.addEventListener('click', () => {
-  isMuted = !isMuted;
-  muteBtn.textContent = isMuted ? "🔇 Muted" : "🔊 Mute";
-});
-
-pauseBtn.addEventListener('click', () => {
-  isPaused = !isPaused;
-  pauseBtn.textContent = isPaused ? "Resume" : "Pause";
-  if(!isPaused && !raf){ raf = requestAnimationFrame(loop); }
-});
-
-restartBtn.addEventListener('click', () => {
-  // clear and reset
-  particles.length = 0; rockets.length = 0;
-  ctx.clearRect(0,0,W,H);
-  // relaunch a few
-  for(let i=0;i<5;i++) setTimeout(spawnAutoRocket, i*180);
-  // re-show message gradually
-  messageEl.classList.remove('show');
-  setTimeout(()=> { messageEl.classList.add('show') }, 200);
-});
-
-/* ---------- Slow motion birthday message ---------- */
-function showMessage(name, dob){
-  messageEl.style.opacity = 0;
-  messageEl.textContent = Happy Birthday, ${name}!;
-  const dobText = dob ? Born on ${new Date(dob).toLocaleDateString()} : '';
-  subtext.textContent = dobText;
-  messageBox.style.pointerEvents = 'none';
-  messageBox.ariaHidden = 'false';
-  // play gentle music-like tube using oscillator as background for message
-  if(!isMuted){
-    ensureAudioCtx();
-    const ac = AudioCtx;
-    const osc = ac.createOscillator();
-    const g = ac.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(120, ac.currentTime);
-    g.gain.value = 0.0001;
-    osc.connect(g); g.connect(ac.destination);
-    // slow swell
-    g.gain.linearRampToValueAtTime(0.028, ac.currentTime + 2.0);
-    osc.start();
-    g.gain.exponentialRampToValueAtTime(0.00001, ac.currentTime + 8.5);
-    osc.stop(ac.currentTime + 9);
-  }
-
-  // show text with class that triggers slow motion reveal
-  messageEl.classList.remove('show');
-  void messageEl.offsetWidth;
-  messageEl.classList.add('show');
-
-  // schedule a few large, slow fireworks synchronized with message
-  setTimeout(()=> spawnBigDisplay(), 600);
-  setTimeout(()=> spawnBigDisplay(), 1800);
-  setTimeout(()=> spawnBigDisplay(), 3200);
-}
-
-/* Big display: multiple simultaneous rockets that explode into many particles */
-function spawnBigDisplay(){
-  const center = W * (0.4 + Math.random()*0.2);
-  for(let i=0;i<6;i++){
-    setTimeout(()=> spawnRocket(center + random(-120,120), H, random(-2,2), random(-12,-16), Math.floor(random(0,360))), i*80);
-  }
-  // deeper boom
-  playExplosion(0, 1.0);
-}
-
-/* ---------- Initialization visuals & gentle ambient lighting ---------- */
-// draw a subtle skyline silhouette
-function drawSkyline(){
-  const horizon = H*0.68;
-  ctx.save();
-  // water reflection base
-  ctx.fillStyle = 'rgba(0,8,14,0.5)';
-  ctx.fillRect(0, horizon, W, H - horizon);
-  // faux buildings rectangles
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  for(let i=0;i<18;i++){
-    const bw = random(30, 90);
-    const bh = random(40, 150);
-    const x = i * (W / 18) + random(-20, 20);
-    const y = horizon - bh;
-    ctx.fillRect(x, y, bw, bh);
-    // windows
-    for(let wx = x+6; wx < x + bw - 6; wx += 10){
-      if(Math.random() < 0.4) ctx.fillStyle='rgba(255,215,120,0.06)';
-      else ctx.fillStyle='rgba(255,215,120,0.01)';
-      ctx.fillRect(wx, y + 8 + Math.random()*bh*0.8, 6, 5);
+    // Periodically launch fireworks in different places
+    function randomFireworkWave(){
+      const x = random(window.innerWidth*0.15, window.innerWidth*0.85);
+      const y = random(window.innerHeight*0.06, window.innerHeight*0.5);
+      launchFirework(x,y, Math.floor(random(20,40)));
     }
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  }
-  // calm reflection line
-  ctx.restore();
-}
-drawSkyline();
+    setInterval(randomFireworkWave, 3200);
 
-// boot initial small rockets for visual interest
-for(let i=0;i<3;i++) setTimeout(spawnAutoRocket, i*300);
+    // manual replay button
+    document.getElementById('replay').addEventListener('click', ()=>{
+      for (let i=0;i<6;i++) launchFirework(window.innerWidth*(0.2+i*0.12), window.innerHeight*random(0.08,0.45), 40);
+      launchConfetti();
+    });
 
-/* Accessibility: focus the name input */
-nameInput.focus();
+    // ------- Confetti (DOM simple) -------
+    function launchConfetti(){
+      const root = document.body;
+      for (let i=0;i<60;i++){
+        const el = document.createElement('div');
+        el.style.position='fixed'; el.style.left = (Math.random()*100)+'%'; el.style.top='-10px';
+        el.style.width='10px'; el.style.height='14px'; el.style.background = ['#ff6b6b','#ffd93d','#6bffef','#8e7bff'][Math.floor(Math.random()*4)];
+        el.style.opacity='0.95'; el.style.transform = `rotate(${Math.random()*360}deg)`;
+        el.style.borderRadius='3px'; el.style.zIndex=9999; document.body.appendChild(el);
+        const dur = 3000 + Math.random()*1600;
+        el.animate([{transform:el.style.transform, top:'-10px'},{transform:`rotate(${Math.random()*720}deg)`, top:(70+Math.random()*60)+'vh'}],{duration:dur, easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish = ()=>el.remove();
+      }
+    }
 
-/* Safety: warn if audio context resumed needed on Chrome Mobile */
-document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible' && AudioCtx && AudioCtx.state === 'suspended'){
-    AudioCtx.resume().catch(()=>{});
-  }
-});
+    // ------- Sound: simple cracker burst and soft ambient pad via WebAudio -------
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let ambientGain, soundOn=true;
+    (function initSound(){
+      ambientGain = audioCtx.createGain(); ambientGain.gain.value = 0.03; ambientGain.connect(audioCtx.destination);
+      // create a slow ambient pad using two oscillators + filter
+      const o1 = audioCtx.createOscillator(); o1.type='sine'; o1.frequency.value = 220;
+      const o2 = audioCtx.createOscillator(); o2.type='sine'; o2.frequency.value = 330;
+      const g = audioCtx.createGain(); g.gain.value = 0.05; o1.connect(g); o2.connect(g);
+      const filt = audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=800; g.connect(filt); filt.connect(ambientGain);
+      o1.start(); o2.start();
+      // slowly modulate
+      setInterval(()=>{filt.frequency.value = 700 + Math.random()*800; g.gain.value = 0.03 + Math.random()*0.06}, 2000);
+    })();
 
-</script>
+    function playBurstSound(){
+      if (!soundOn) return;
+      const now = audioCtx.currentTime;
+      // multiple quick noise pops to simulate crackers
+      for (let i=0;i<6;i++){
+        const dur = 0.06 + Math.random()*0.12;
+        const bufferSize = audioCtx.sampleRate * dur;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let j=0;j<bufferSize;j++){ data[j] = (Math.random()*2-1) * Math.exp(-j/bufferSize*3); }
+        const src = audioCtx.createBufferSource(); src.buffer = buffer;
+        const g = audioCtx.createGain(); g.gain.value = 0.7 * (0.4+Math.random()*0.6);
+        src.connect(g); g.connect(audioCtx.destination);
+        src.start(now + i*0.02);
+        src.stop(now + i*0.02 + dur + 0.02);
+      }
+    }
+
+    // toggle sound
+    const toggleBtn = document.getElementById('toggleSound');
+    toggleBtn.addEventListener('click', ()=>{
+      soundOn = !soundOn; toggleBtn.textContent = soundOn? '🔊 Sound: ON':'🔇 Sound: OFF';
+      ambientGain.gain.value = soundOn? 0.03:0.0;
+      // resume audio context if needed
+      if (soundOn && audioCtx.state === 'suspended') audioCtx.resume();
+    });
+
+    // ensure audio context resumes on first user gesture
+    window.addEventListener('pointerdown', ()=>{ if (audioCtx.state === 'suspended') audioCtx.resume(); });
+
+    // initial burst to celebrate
+    setTimeout(()=>{for (let i=0;i<4;i++) setTimeout(()=>launchFirework(window.innerWidth*(0.25+i*0.2), window.innerHeight*0.25, 60), i*220);},900);
+
+    // small helper for random in one place
+    function random(a,b){return Math.random()*(b-a)+a}
+
+  </script>
 </body>
 </html>
