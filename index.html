@@ -1,255 +1,192 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Happy Birthday — For Dhana</title>
-  <style>
-    /* Reset */
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body,#app{height:100%}
-    body{font-family: 'Segoe UI', Roboto, Helvetica, Arial; background:#001; color:#fff; overflow:hidden}
-
-    /* Scene layout */
-    .scene{position:relative;width:100%;height:100vh;background:linear-gradient(#00102b 0%, #000814 60%, #07112a 100%);display:flex;align-items:end;justify-content:center}
+<meta charset="UTF-8">
+<title>Happy Birthday My Dhana</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: #001028;
+        font-family: "Segoe UI", sans-serif;
+        color: white;
+    }
 
     /* Moon */
-    .moon{position:absolute;left:50%;top:8%;transform:translateX(-50%);width:220px;height:220px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #eaf6ff 0%, #cfe9ff 25%, #9fc9ff 50%, #6ea9ff 75%, #3b6edb 100%);filter:drop-shadow(0 0 30px rgba(110,170,255,0.6));mix-blend-mode:screen}
-    .moon::after{content:'';position:absolute;right:22%;top:20%;width:40%;height:40%;border-radius:50%;background:rgba(255,255,255,0.12);filter:blur(6px)}
+    .moon {
+        position: absolute;
+        top: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #ffffff, #9fc9ff, #3a64c9);
+        box-shadow: 0 0 40px #7fb6ff;
+    }
 
-    /* Stars */
-    .starfield{position:absolute;inset:0;pointer-events:none}
-    .star{position:absolute;background:rgba(255,255,255,0.9);border-radius:50%;opacity:0.85;animation:twinkle 4s linear infinite}
-    @keyframes twinkle{0%{transform:scale(0.6);opacity:0.2}50%{transform:scale(1.2);opacity:1}100%{transform:scale(0.6);opacity:0.2}}
+    /* Birthday Message Box */
+    .msg-box {
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 700px;
+        padding: 20px;
+        border-radius: 15px;
+        background: rgba(0, 0, 40, 0.65);
+        backdrop-filter: blur(6px);
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+        text-align: center;
+        font-size: 18px;
+        line-height: 1.6;
+        animation: fadeIn 2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {opacity: 0;}
+        to {opacity: 1;}
+    }
 
     /* Lake */
-    .lake{position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(180deg,#05122b 0%, #021028 50%, #000814 100%);box-shadow:inset 0 20px 80px rgba(0,0,0,0.7);overflow:hidden}
-    .reflection{position:absolute;left:50%;transform:translateX(-50%);bottom:20%;width:600px;height:300px;border-radius:50%;filter:blur(12px);opacity:0.25;background:radial-gradient(ellipse at center, rgba(150,200,255,0.45) 0%, rgba(50,80,160,0.08) 50%, transparent 60%);mix-blend-mode:screen}
+    .lake {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 30%;
+        background: linear-gradient(#001028, #000510, #000);
+    }
 
-    /* Trees & parrots (simple silhouettes) */
-    .tree{position:absolute;bottom:14%;left:8%;width:180px;height:220px}
-    .tree .trunk{position:absolute;left:48%;bottom:0;width:18px;height:60%;background:#2b1b10;border-radius:6px}
-    .tree .leaves{position:absolute;left:0;top:0;width:100%;height:60%;background:radial-gradient(ellipse at 30% 30%, #0c3 0%, #063 30%, #012 100%);border-radius:50%}
-    .parrot{position:absolute;width:40px;height:28px;border-radius:40px 40px 10px 10px;background:linear-gradient(#0ff,#07b);transform-origin:center;box-shadow:0 3px 6px rgba(0,0,0,0.6)}
-    .parrot.left{left:26%;top:22%} .parrot.right{left:40%;top:28%}
-    .parrot::after{content:'';position:absolute;right:-6px;top:8px;width:10px;height:6px;border-radius:50%;background:#ff4757}
-
-    /* Fireworks canvas sits above lake */
-    canvas#fireworks{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
-
-    /* Message box */
-    .card{position:absolute;left:50%;transform:translateX(-50%);top:50%;width:min(900px,94%);max-height:60%;padding:26px;border-radius:18px;background:linear-gradient(180deg, rgba(6,12,30,0.7), rgba(3,6,15,0.55));backdrop-filter:blur(6px);box-shadow:0 10px 40px rgba(0,0,0,0.6);overflow:auto}
-    .title{font-size:28px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
-    .title .heart{font-size:34px;color:#ff82a6}
-    .message{white-space:pre-wrap;line-height:1.5;font-size:18px}
-
-    /* Typing cursor */
-    .cursor{display:inline-block;width:10px;height:20px;background:#fff;margin-left:6px;animation:blink 1s steps(2) infinite}
-    @keyframes blink{50%{opacity:0}}
-
-    /* Controls */
-    .controls{position:absolute;right:18px;bottom:18px;display:flex;gap:10px}
-    .btn{background:linear-gradient(180deg,#29467a,#12315a);color:#fff;padding:10px 14px;border-radius:12px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.45)}
-
-    /* Small responsive tweaks */
-    @media (max-width:600px){.moon{width:140px;height:140px}.card{top:48%;padding:18px;font-size:15px}}
-  </style>
+    /* Fireworks Canvas */
+    canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+</style>
 </head>
 <body>
-  <div id="app" class="scene">
-    <div class="moon" aria-hidden></div>
-    <div class="starfield" id="starfield"></div>
 
-    <canvas id="fireworks"></canvas>
+<div class="moon"></div>
 
-    <div class="card" role="article" aria-label="Birthday message">
-      <div class="title"><span class="heart">💖</span><strong>To my Dhana — Happy Birthday</strong></div>
-      <div class="message" id="message"></div>
-    </div>
+<div class="msg-box">
+    <b>Happy Birthday My Dhana 💖</b><br><br>
+    Happy birthday to my dhana I hope you will be very happy today and also with me.
+    My love I always pray that God that my sweet heart will be so happy for hundreds of years with me my cutie…
+    I'm so blessed that I got you in this big world.  
+    I promise you that I will keep you happy more and more every day.  
+    And my love for you is infinite my cutie sonaa motkiiii…  
+    I love you forever and ever and ever… 💋😘🐼💋  
+    My gelu pila suna pandu love you so much my hati…  
+    In my life I'm so happy from last three years and that credit goes to you my baby…  
+    So I made this small surprise for you.  
+    Be mine forever my dear dhaana pandu gelu pila ❤️  
+    Many many happy returns of the day 🎊🎈🥳🎉🐼
+</div>
 
-    <div class="lake">
-      <div class="reflection"></div>
-      <div class="tree">
-        <div class="leaves"></div>
-        <div class="trunk"></div>
-      </div>
-      <div class="parrot left" style="transform:translate(-40px,10px) rotate(-10deg)"></div>
-      <div class="parrot right" style="transform:translate(50px,20px) scaleX(-1) rotate(6deg)"></div>
-    </div>
+<div class="lake"></div>
 
-    <div class="controls">
-      <button class="btn" id="toggleSound">🔊 Sound: ON</button>
-      <button class="btn" id="replay">✨ Replay Fireworks</button>
-    </div>
-  </div>
+<canvas id="fireworks"></canvas>
 
-  <script>
-    // THE MESSAGE (keeps exact user text inside JS string so it's easy to show with typing)
-    const MESSAGE = `Happy birthday to my dhana I hope you will be very happy today and also with me  My love I always pray that God that my sweet heart will be so happy for hundreds of years with me my cutie I'm so blessed that I got you in this big world  I promise you that I will keep you happy more and more every day  And my love for is infinite my cutie sonaa motkiiii I love forever and ever and ever and ever,,, 💋😘🐼💋 my gelu pila suna pandu love you so much my hati  In my life I'm so happy from last three years and that credit goes you my baby You are always taking care mine like a kid which was really an awesome treat for me ever so I did this small surprise for you  nd I hope you will like it my baby be mine forever my dear dhaana pandu gelu pila and once again a big big big and lots of kisii and lots of love from u r bogaaa dear and let's celebrate this together my duki bogii pila and once so many happy returns of the day 🎊🎈 🐼😘🐘🎊🎊🥳🥳🥳🎉🎉🎉🐻 gelu`;
+<script>
+/* Simple Fireworks */
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
 
-    // Typing effect
-    const messageEl = document.getElementById('message');
-    let idx = 0;
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.onresize = resize;
 
-    function typeNext() {
-      if (idx <= MESSAGE.length) {
-        messageEl.textContent = MESSAGE.slice(0, idx);
-        idx++;
-        setTimeout(typeNext, 25 + Math.random()*30);
-      } else {
-        // after typing finishes, trigger a big fireworks burst and confetti
-        launchFirework(window.innerWidth/2, window.innerHeight/3, 6);
-        setTimeout(()=>{launchConfetti();},400);
-      }
+let fireworks = [];
+
+function Firework() {
+    this.x = Math.random() * canvas.width;
+    this.y = canvas.height;
+    this.tx = Math.random() * canvas.width;
+    this.ty = Math.random() * canvas.height * 0.4;
+    this.history = [];
+    this.done = false;
+    this.hue = Math.floor(Math.random() * 360);
+}
+
+Firework.prototype.update = function () {
+    let dx = this.tx - this.x;
+    let dy = this.ty - this.y;
+
+    this.x += dx * 0.03;
+    this.y += dy * 0.03;
+
+    this.history.push({ x: this.x, y: this.y });
+
+    if (this.history.length > 20) this.history.shift();
+
+    if (Math.abs(dx) < 3 && Math.abs(dy) < 3) {
+        this.done = true;
+        explode(this.x, this.y, this.hue);
     }
-    typeNext();
+};
 
-    // ------- Starfield generation -------
-    const starfield = document.getElementById('starfield');
-    for (let i=0;i<120;i++){
-      const s = document.createElement('div');
-      s.className='star';
-      const size = Math.random()*2.6+0.6;
-      s.style.width = size+'px'; s.style.height = size+'px';
-      s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*45+'%';
-      s.style.opacity = 0.4+Math.random()*0.8;
-      s.style.animationDelay = (Math.random()*4)+'s';
-      starfield.appendChild(s);
+Firework.prototype.draw = function () {
+    ctx.beginPath();
+    ctx.strokeStyle = `hsl(${this.hue},100%,70%)`;
+    ctx.moveTo(this.history[0].x, this.history[0].y);
+
+    for (let p of this.history)
+        ctx.lineTo(p.x, p.y);
+
+    ctx.stroke();
+};
+
+function explode(x, y, hue) {
+    for (let i = 0; i < 40; i++) {
+        fireworks.push({
+            x,
+            y,
+            angle: Math.random() * 2 * Math.PI,
+            speed: Math.random() * 4 + 2,
+            radius: 0,
+            hue
+        });
     }
+}
 
-    // ------- Fireworks (Canvas) -------
-    const canvas = document.getElementById('fireworks');
-    const ctx = canvas.getContext('2d');
-    let DPR = window.devicePixelRatio || 1;
-    function resize(){
-      canvas.width = window.innerWidth * DPR;
-      canvas.height = window.innerHeight * DPR;
-      canvas.style.width = window.innerWidth+'px';
-      canvas.style.height = window.innerHeight+'px';
-      ctx.setTransform(DPR,0,0,DPR,0,0);
-    }
-    window.addEventListener('resize', resize); resize();
+function loop() {
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    let particles = [];
+    if (Math.random() < 0.04)
+        fireworks.push(new Firework());
 
-    function random(min,max){return Math.random()*(max-min)+min}
+    for (let i = fireworks.length - 1; i >= 0; i--) {
+        let f = fireworks[i];
 
-    class Particle{
-      constructor(x,y,color,vel,life,size){
-        this.x=x;this.y=y;this.vx=vel.x;this.vy=vel.y;this.color=color;this.life=life;this.age=0;this.size=size;this.fade = Math.random()*0.02+0.009
-      }
-      update(dt){this.age+=dt;this.vy+=0.02;this.x+=this.vx;this.y+=this.vy;}
-      draw(ctx){const t=1-(this.age/this.life);ctx.globalCompositeOperation='lighter';ctx.beginPath();ctx.fillStyle=`rgba(${this.color.r},${this.color.g},${this.color.b},${Math.max(0,t)})`;ctx.arc(this.x,this.y, Math.max(0,this.size*t),0,Math.PI*2);ctx.fill();}
-    }
+        if (f instanceof Firework) {
+            f.update();
+            f.draw();
+            if (f.done) fireworks.splice(i, 1);
+        } else {
+            f.x += Math.cos(f.angle) * f.speed;
+            f.y += Math.sin(f.angle) * f.speed;
+            f.speed *= 0.96;
+            f.radius += 0.3;
 
-    function launchFirework(x,y,count){
-      const palette = [ {r:255,g:180,b:60}, {r:120,g:200,b:255}, {r:255,g:100,b:160}, {r:200,g:255,b:160}, {r:160,g:120,b:255} ];
-      const base = palette[Math.floor(Math.random()*palette.length)];
-      const n = count || 24;
-      for (let i=0;i<n;i++){
-        const angle = Math.PI*2 * (i/n) + (Math.random()-0.5)*0.6;
-        const speed = random(2,6);
-        const vel = {x:Math.cos(angle)*speed, y:Math.sin(angle)*speed};
-        const p = new Particle(x, y, base, vel, random(40,110), random(2.0,5.5));
-        particles.push(p);
-      }
-      // small pop cracks
-      for (let i=0;i<6;i++){particles.push(new Particle(x,y,base,{x:random(-1,1),y:random(-2,0)},random(10,40),random(1,3)))}
-      if (soundOn) playBurstSound();
-    }
+            ctx.beginPath();
+            ctx.fillStyle = `hsl(${f.hue},100%,70%)`;
+            ctx.arc(f.x, f.y, 2, 0, Math.PI * 2);
+            ctx.fill();
 
-    function animate(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      const dt = 1;
-      for (let i=particles.length-1;i>=0;i--){
-        const p = particles[i];
-        p.update(dt);
-        p.draw(ctx);
-        if (p.age > p.life) particles.splice(i,1);
-      }
-      requestAnimationFrame(animate);
-    }
-    animate();
-
-    // Periodically launch fireworks in different places
-    function randomFireworkWave(){
-      const x = random(window.innerWidth*0.15, window.innerWidth*0.85);
-      const y = random(window.innerHeight*0.06, window.innerHeight*0.5);
-      launchFirework(x,y, Math.floor(random(20,40)));
-    }
-    setInterval(randomFireworkWave, 3200);
-
-    // manual replay button
-    document.getElementById('replay').addEventListener('click', ()=>{
-      for (let i=0;i<6;i++) launchFirework(window.innerWidth*(0.2+i*0.12), window.innerHeight*random(0.08,0.45), 40);
-      launchConfetti();
-    });
-
-    // ------- Confetti (DOM simple) -------
-    function launchConfetti(){
-      const root = document.body;
-      for (let i=0;i<60;i++){
-        const el = document.createElement('div');
-        el.style.position='fixed'; el.style.left = (Math.random()*100)+'%'; el.style.top='-10px';
-        el.style.width='10px'; el.style.height='14px'; el.style.background = ['#ff6b6b','#ffd93d','#6bffef','#8e7bff'][Math.floor(Math.random()*4)];
-        el.style.opacity='0.95'; el.style.transform = `rotate(${Math.random()*360}deg)`;
-        el.style.borderRadius='3px'; el.style.zIndex=9999; document.body.appendChild(el);
-        const dur = 3000 + Math.random()*1600;
-        el.animate([{transform:el.style.transform, top:'-10px'},{transform:`rotate(${Math.random()*720}deg)`, top:(70+Math.random()*60)+'vh'}],{duration:dur, easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish = ()=>el.remove();
-      }
+            if (f.speed < 0.2) fireworks.splice(i, 1);
+        }
     }
 
-    // ------- Sound: simple cracker burst and soft ambient pad via WebAudio -------
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let ambientGain, soundOn=true;
-    (function initSound(){
-      ambientGain = audioCtx.createGain(); ambientGain.gain.value = 0.03; ambientGain.connect(audioCtx.destination);
-      // create a slow ambient pad using two oscillators + filter
-      const o1 = audioCtx.createOscillator(); o1.type='sine'; o1.frequency.value = 220;
-      const o2 = audioCtx.createOscillator(); o2.type='sine'; o2.frequency.value = 330;
-      const g = audioCtx.createGain(); g.gain.value = 0.05; o1.connect(g); o2.connect(g);
-      const filt = audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=800; g.connect(filt); filt.connect(ambientGain);
-      o1.start(); o2.start();
-      // slowly modulate
-      setInterval(()=>{filt.frequency.value = 700 + Math.random()*800; g.gain.value = 0.03 + Math.random()*0.06}, 2000);
-    })();
+    requestAnimationFrame(loop);
+}
+loop();
+</script>
 
-    function playBurstSound(){
-      if (!soundOn) return;
-      const now = audioCtx.currentTime;
-      // multiple quick noise pops to simulate crackers
-      for (let i=0;i<6;i++){
-        const dur = 0.06 + Math.random()*0.12;
-        const bufferSize = audioCtx.sampleRate * dur;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let j=0;j<bufferSize;j++){ data[j] = (Math.random()*2-1) * Math.exp(-j/bufferSize*3); }
-        const src = audioCtx.createBufferSource(); src.buffer = buffer;
-        const g = audioCtx.createGain(); g.gain.value = 0.7 * (0.4+Math.random()*0.6);
-        src.connect(g); g.connect(audioCtx.destination);
-        src.start(now + i*0.02);
-        src.stop(now + i*0.02 + dur + 0.02);
-      }
-    }
-
-    // toggle sound
-    const toggleBtn = document.getElementById('toggleSound');
-    toggleBtn.addEventListener('click', ()=>{
-      soundOn = !soundOn; toggleBtn.textContent = soundOn? '🔊 Sound: ON':'🔇 Sound: OFF';
-      ambientGain.gain.value = soundOn? 0.03:0.0;
-      // resume audio context if needed
-      if (soundOn && audioCtx.state === 'suspended') audioCtx.resume();
-    });
-
-    // ensure audio context resumes on first user gesture
-    window.addEventListener('pointerdown', ()=>{ if (audioCtx.state === 'suspended') audioCtx.resume(); });
-
-    // initial burst to celebrate
-    setTimeout(()=>{for (let i=0;i<4;i++) setTimeout(()=>launchFirework(window.innerWidth*(0.25+i*0.2), window.innerHeight*0.25, 60), i*220);},900);
-
-    // small helper for random in one place
-    function random(a,b){return Math.random()*(b-a)+a}
-
-  </script>
 </body>
 </html>
